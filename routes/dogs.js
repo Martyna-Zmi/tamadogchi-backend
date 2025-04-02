@@ -31,8 +31,8 @@ router.get('/:id', async (req, res) => {
 //post dog
 router.post('/', async (req, res) => {
   try{
-    const { name, birthDate, lastFed, likedFoods, currentHunger, maxHunger } = req.body;
-    const newDog = new Dog({ name,  birthDate, lastFed, likedFoods, currentHunger, maxHunger  });
+    const { name, birthDate, lastFed, likedFoods, currentHunger, maxHunger, currentHappiness, maxHappiness } = req.body;
+    const newDog = new Dog({ name,  birthDate, lastFed, likedFoods, currentHunger, maxHunger, currentHappiness, maxHappiness });
     const savedDog = await newDog.save();
     res.status(201).json(savedDog);
   }
@@ -56,19 +56,56 @@ router.delete('/:id', async (req, res) => {
 
 //feed a dog - put
 router.put('/feed/:id/:foodId', async (req, res) => {
-  //TODO: add discovering liked food dynamic
   try {
-    const food = await Food.findById(req.params.foodId).exec();
-    const dog = await Dog.findById(req.params.id).exec()
+    const foodId = req.params.foodId;
+    const food = await Food.findById(foodId).exec();
+    if (!food) {
+      return res.status(404).json({ message: "Food not found" });
+    }
+    const dog = await Dog.findById(req.params.id).exec();
+    if (!dog) {
+      return res.status(404).json({ message: "Dog not found" });
+    }
+
+    //for finding out liked food
+    const newLikedFoods = [... dog.likedFoods];
+    if(dog.likedFoods.length < 3 && !dog.likedFoods.includes(foodId)){
+      const chanceToDiscover = Math.floor(Math.random() * 3); //1 in 3 chance
+      if(chanceToDiscover===1){
+        newLikedFoods.push(foodId);
+      }
+    }
+
     const today = new Date();
+
     const newHunger = Math.min(dog.currentHunger + food.hungerPoints, dog.maxHunger);
     const updatedDog = await Dog.findByIdAndUpdate(
         req.params.id,
-        { $set: { ["currentHunger"]: newHunger, lastFed: today.toISOString().split('T')[0] } },
+        { $set: { currentHunger: newHunger, lastFed: today.toISOString().split('T')[0], likedFoods: newLikedFoods } },
+        { new: true, runValidators: true }
+    );
+
+    res.json(updatedDog);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+//amuse a dog - put
+router.put('/amuse/:id/:amount', async (req, res) => {
+  try {
+    const amount = parseInt(req.params.amount);
+    const dog = await Dog.findById(req.params.id).exec();
+
+    const newHappiness = Math.min(dog.currentHappiness + amount, dog.maxHappiness);
+
+    const updatedDog = await Dog.findByIdAndUpdate(
+        req.params.id,
+        { $set: { ["currentHappiness"]: newHappiness } },
         { new: true, runValidators: true }
     );
     if (!updatedDog) {
-      return res.status(404).json({ message: "Item not found" });
+      return res.status(404).json({ message: "Dog not found" });
     }
     res.json(updatedDog);
   } catch (error) {
