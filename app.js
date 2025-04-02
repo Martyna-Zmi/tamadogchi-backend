@@ -12,9 +12,10 @@ const mongoURI = process.env.MONGO_URI;
 
 mongoose
     .connect(mongoURI)
-    .then(() => console.log('Connected to MongoDB'))
+    .then(() => console.log('\x1b[32m MONGOOSE: Successfully connected to MongoDB \x1b[0m'))
     .catch((err) => {
-        console.error(`Failed to connect to MongoDB: ${err.message}`)
+        console.error(`\x1b[31m MONGOOSE: Failed to connect to MongoDB - \x1b[0m ${err.message}`);
+        console.log("Shutting down...");
         process.exit(-1);
     });
 
@@ -26,7 +27,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use((req, res, next) => {
     const { method, url } = req;
     const timestamp = new Date().toISOString();
-    console.log(`INCOMING HTTP ${method} request at: [${timestamp}], request url: ${url}`);
+    console.log(`\x1b[32m INCOMING HTTP ${method} \x1b[0m request at: [${timestamp}], request url: ${url}`);
     next();
 });
 

@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 
 const dogSchema = new mongoose.Schema({
     name: { type: String, required: true },
+    variant: {type: Number, required: true, min:1},
     birthDate: { type: Date, required: true},
     lastFed: {type: Date, required: true},
     likedFoods: [{type: mongoose.Schema.Types.ObjectId, ref: 'Food', required: true}],

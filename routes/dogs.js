@@ -31,8 +31,8 @@ router.get('/:id', async (req, res) => {
 //post dog
 router.post('/', async (req, res) => {
   try{
-    const { name, birthDate, lastFed, likedFoods, currentHunger, maxHunger, currentHappiness, maxHappiness } = req.body;
-    const newDog = new Dog({ name,  birthDate, lastFed, likedFoods, currentHunger, maxHunger, currentHappiness, maxHappiness });
+    const { name, variant, birthDate, lastFed, likedFoods, currentHunger, maxHunger, currentHappiness, maxHappiness } = req.body;
+    const newDog = new Dog({ name,  variant, birthDate, lastFed, likedFoods, currentHunger, maxHunger, currentHappiness, maxHappiness });
     const savedDog = await newDog.save();
     res.status(201).json(savedDog);
   }
