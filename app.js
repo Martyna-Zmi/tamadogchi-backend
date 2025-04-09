@@ -1,6 +1,7 @@
 require('dotenv').config({path: './.env'});
 
 const express = require('express');
+const cors = require('cors');
 const path = require('path');
 const mongoose = require('mongoose');
 
@@ -18,7 +19,7 @@ mongoose
         console.log("Shutting down...");
         process.exit(-1);
     });
-
+app.use(cors())
 app.use(express.json());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
