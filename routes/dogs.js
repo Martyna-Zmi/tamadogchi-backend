@@ -4,6 +4,17 @@ router.use(express.json());
 const Dog = require("../models/Dog");
 const Food = require("../models/Food");
 
+
+// Function to update dogs on startup
+async function updateDatabaseOnStartup() {
+  try {
+    await Dog.updateMany({}, { $set: { currentHunger: 2, currentHappiness: 1 } });
+  } catch (error) {
+    console.error("Error updating database:", error);
+  }
+}
+ updateDatabaseOnStartup();
+
 //get all dogs
 router.get('/', async (req, res) => {
   try {
@@ -83,7 +94,7 @@ router.put('/feed/:id/:foodId', async (req, res) => {
         req.params.id,
         { $set: { currentHunger: newHunger, lastFed: today.toISOString().split('T')[0], likedFoods: newLikedFoods } },
         { new: true, runValidators: true }
-    );
+    ).populate('likedFoods').exec();
 
     res.json(updatedDog);
   } catch (error) {
@@ -103,7 +114,7 @@ router.put('/amuse/:id/:amount', async (req, res) => {
         req.params.id,
         { $set: { ["currentHappiness"]: newHappiness } },
         { new: true, runValidators: true }
-    );
+    ).populate('likedFoods').exec();
     if (!updatedDog) {
       return res.status(404).json({ message: "Dog not found" });
     }
